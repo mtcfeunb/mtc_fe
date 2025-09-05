@@ -1,1 +1,350 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Professores — MTC/FE/UnB</title>
+<style>
+  :root{
+    --bg-outer:#0b4d3a;
+    --bg-header:#093e30;
+    --bg-content:#f3f6f7;
+    --link:#106a48;
+    --link-hover:#159963;
+    --chip:#0c7a56;
+    --text-on-dark:#ffffff;
+    --text-muted:#cfe6dc;
+    --text-body:#1f2937;
+    --radius:14px;
+    --shadow:0 8px 20px rgba(0,0,0,.16);
+    --focus:0 0 0 3px rgba(21,153,99,.35);
+  }
+
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    background:
+      radial-gradient(1000px 600px at 20% -10%, rgba(255,255,255,.08), transparent),
+      radial-gradient(900px 500px at 120% 10%, rgba(255,255,255,.05), transparent),
+      var(--bg-outer);
+    color:var(--text-on-dark);
+    line-height:1.6;
+  }
+  a{color:inherit;text-decoration:none}
+  a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{
+    outline:none;box-shadow:var(--focus);border-radius:10px;
+  }
+
+  header{
+    background:linear-gradient(180deg,var(--bg-header),#0b4635);
+    display:flex;align-items:center;justify-content:space-between;
+    padding:16px 22px;position:sticky;top:0;z-index:10;
+    border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand img{width:44px;height:44px;object-fit:contain;border-radius:8px}
+  .brand h1{margin:0;font-size:clamp(1rem,2.2vw,1.25rem);letter-spacing:.2px}
+  .brand p{margin:0;opacity:.85;font-size:.9rem}
+
+  .actions button{
+    background:#ffffff14;padding:8px 12px;border-radius:10px;font-weight:700;
+    border:none;cursor:pointer;color:white;transition:background .2s ease,transform .05s ease;
+  }
+  .actions button:hover{background:#ffffff22;transform:translateY(-1px)}
+
+  .wrap{max-width:1200px;margin:26px auto 60px;padding:0 16px}
+
+  .card{
+    background:#fff;color:var(--text-body);
+    border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;
+  }
+  .card-head{
+    background:var(--link);color:#fff;padding:14px 18px;display:flex;gap:12px;align-items:center;flex-wrap:wrap
+  }
+  .card-head h2{margin:0;font-size:1.05rem;letter-spacing:.02em}
+  .badge{background:#ffffff22;color:#fff;font-weight:800;font-size:.8rem;padding:4px 10px;border-radius:999px}
+
+  .tools{
+    display:grid;grid-template-columns:1fr 160px 160px;gap:10px;
+    padding:14px 16px;background:#f7faf9;border-bottom:1px solid #e5ece9
+  }
+  .tools input,.tools select{
+    width:100%;padding:10px 12px;border-radius:12px;border:1px solid #d5d8dc;background:#fff;font:inherit
+  }
+
+  /* Grade de docentes */
+  .grid{padding:16px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+  @media (max-width:980px){ .grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media (max-width:640px){ .grid{grid-template-columns:1fr}}
+
+  .prof{
+    background:#fff;border:1px solid #eef2f0;border-radius:12px;padding:14px;
+    display:grid;grid-template-columns:54px 1fr;gap:12px;align-items:flex-start;
+    transition:transform .06s ease, box-shadow .2s ease;
+  }
+  .prof:hover{ transform:translateY(-1px); box-shadow:0 6px 16px rgba(0,0,0,.08) }
+  .avatar{
+    width:54px;height:54px;border-radius:12px;background:#e7f4ef;display:flex;align-items:center;justify-content:center;
+    color:#0b4d3a;font-weight:900;font-size:1.05rem;border:1px solid #d5eee6
+  }
+  .p-name{margin:0;font-weight:900}
+  .p-link{display:inline-flex;align-items:center;gap:8px;margin-top:2px;color:var(--link);font-weight:700}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .chip{
+    background:var(--chip);color:#fff;border-radius:999px;padding:6px 12px;font-weight:800;font-size:.78rem;
+    cursor:pointer;user-select:none;display:inline-flex;align-items:center;gap:8px
+  }
+  .chip[aria-expanded="true"]{ background:var(--link-hover) }
+  .muted{color:#4b5563;font-size:.9rem}
+
+  /* painel desdobrável dentro do cartão */
+  .reveal{
+    width:100%;
+    grid-column: 1 / -1; /* ocupa a largura total do cartão */
+    background:#f7faf9;border:1px solid #e5ece9;border-radius:10px;
+    padding:10px 12px;margin-top:8px; display:none;
+  }
+  .reveal.show{ display:block }
+  .reveal .row{ display:flex; align-items:center; gap:10px; margin:6px 0 }
+  .reveal .label{ font-weight:900; min-width:78px; color:#0b4d3a }
+  .reveal a{ color:var(--link); font-weight:800 }
+  .reveal small{ color:#6b7280 }
+
+  footer{margin:18px 0 0;color:var(--text-muted);text-align:center;padding:10px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <img src="https://i.imgur.com/MoDDdlB.png" alt="Logo MTC" />
+    <div>
+      <h1>Professores do MTC</h1>
+      <p>Faculdade de Educação · UnB</p>
+    </div>
+  </div>
+  <nav class="actions">
+    <!-- Botão Sair (tenta fechar a aba/janela) -->
+    <button type="button" onclick="(window.close(),true)" aria-label="Fechar esta janela">✕ Sair</button>
+  </nav>
+</header>
+
+<main class="wrap">
+  <section class="card">
+    <div class="card-head">
+      <h2>Corpo Docente</h2>
+      <span class="badge" id="countBadge">0 docentes</span>
+    </div>
+
+    <!-- Ferramentas -->
+    <div class="tools">
+      <input id="search" type="search" placeholder="Buscar por nome, e-mail ou telefone…" aria-label="Buscar docente">
+      <select id="letter">
+        <option value="all">Todas as letras</option>
+        <option>A</option><option>B</option><option>C</option><option>D</option><option>E</option><option>F</option>
+        <option>G</option><option>H</option><option>I</option><option>J</option><option>K</option><option>L</option>
+        <option>M</option><option>N</option><option>O</option><option>P</option><option>Q</option><option>R</option>
+        <option>S</option><option>T</option><option>U</option><option>V</option><option>W</option><option>X</option>
+        <option>Y</option><option>Z</option>
+      </select>
+      <select id="show">
+        <option value="all">Mostrar tudo</option>
+        <option value="email">Somente com e-mail</option>
+        <option value="phone">Somente com telefone</option>
+      </select>
+    </div>
+
+    <div class="grid" id="grid"></div>
+
+   
+  </section>
+</main>
+
+<script>
+/** Base de dados (nome, link, telefone, e-mail). **/
+const DOCENTES = [
+  {nome:"Andrea Cristina Versuti", url:"https://fe.unb.br/index.php/docentes-mtc/74-andrea-cristina-versuti", fone:"61 99989-0560", email:"andreaversuti@unb.br"},
+  {nome:"Claudia Guilmar Linhares Sanz", url:"https://fe.unb.br/index.php/docentes-mtc/135-claudia-guilmar-linhares-sanz", fone:"", email:"claudiasanz@unb.br"},
+  {nome:"Cristina Maria Costa Leite", url:"https://fe.unb.br/index.php/docentes-mtc/91-cristina-maria-costa-leite", fone:"61 98115-8300", email:"cristin@unb.br"},
+  {nome:"Daniela Barros", url:"", fone:"61 98229-7010", email:""},
+  {nome:"Edvonete Souza de Alencar", url:"", fone:"11 98225-5556", email:"edvonete.alencar@unb.br"},
+  {nome:"Edileuza Fernandes da Silva", url:"https://fe.unb.br/index.php/docentes-mtc/68-edileuza-fernandes-da-silva", fone:"61 98191-1893", email:"edileuzafeunb@gmail.com"},
+  {nome:"Etienne Baldez Louzada Barbosa", url:"https://fe.unb.br/index.php/docentes-mtc/81-etienne-baldez-louzada-barbosa", fone:"21 97989-4550", email:"etienne.baldez@unb.br"},
+  {nome:"Fernanda Müller", url:"https://fe.unb.br/index.php/docentes-mtc/84-fernanda-mueller", fone:"", email:"fernanda.muller@gmail.com"},
+  {nome:"Francisco Thiago Silva", url:"https://fe.unb.br/index.php/docentes-mtc/62-francisco-thiago-silva", fone:"61 99965-5913", email:"francisco.thiago@unb.br"},
+  {nome:"Geraldo Eustáquio Moreira", url:"https://fe.unb.br/index.php/docentes-mtc/85-geraldo-eustaquio-moreira", fone:"61 99230-2134", email:"geust@unb.br"},
+  {nome:"Gilberto Lacerda dos Santos", url:"https://fe.unb.br/index.php/docentes-mtc/82-gilberto-lacerda-dos-santos", fone:"61 98138-9676", email:"glacerda@unb.br"},
+  {nome:"Hélio José Santos Maia", url:"https://fe.unb.br/index.php/docentes-mtc/76-helio-jose-santos-maia", fone:"61 98210-7507", email:"heliomaia@unb.br"},
+  {nome:"Iraci Pereira da Silva", url:"", fone:"61 99959-0493", email:"iraci.silva@unb.br"},
+  {nome:"Ireuda da Costa Mourão", url:"https://fe.unb.br/index.php/docentes-mtc/137-ireuda-da-costa-mourao", fone:"61 98233-8000", email:"ireuda.mourao@hotmail.com"},
+  {nome:"Janielle da Silva Melo", url:"", fone:"96 98125-1973", email:"janielle.melo@unb.br"},
+  {nome:"João Roberto Vieira", url:"https://fe.unb.br/index.php/docentes-mtc/138-joao-roberto-vieira", fone:"61 99276-8396", email:"jrobertounb@gmail.com"},
+  {nome:"Liliane Campos Machado", url:"https://fe.unb.br/index.php/docentes-mtc/139-liliane-campos-machado", fone:"61 98621-8282", email:"lcmpedagogia@unb.br"},
+  {nome:"Lygianne Batista Vieira", url:"https://fe.unb.br/index.php/docentes-mtc/170-lygianne-batista-vieira", fone:"62 98221-4723", email:"lygianne.vieira@unb.br"},
+  {nome:"Marcelo Fabiano Rodrigues Pereira", url:"https://fe.unb.br/index.php/docentes-mtc/185-marcelo-fabiano-rodrigues-pereira", fone:"61 99197-7304", email:"marcelo.pereira@unb.br"},
+  {nome:"Maria Clarisse Vieira", url:"https://fe.unb.br/index.php/docentes-mtc/140-maria-clarisse-vieiraa", fone:"", email:"mariaclarissev@unb.br"},
+  {nome:"Maria Emília Gonzaga de Souza", url:"https://fe.unb.br/index.php/docentes-mtc/61-maria-emilia-gonzaga-de-souza", fone:"61 99259-1719", email:"emiliagonzaga@unb.br"},
+  {nome:"Maria Lidia Bueno Fernandes", url:"https://fe.unb.br/index.php/docentes-mtc/66-maria-lidia-bueno-fernandes", fone:"61 99828-5065", email:"emiliagonzaga@unb.br"},
+  {nome:"Monique Aparecida Voltarelli", url:"https://fe.unb.br/index.php/docentes-mtc/86-monique-aparecida-voltarelli", fone:"19 98130-2617", email:"mvoltarelli@unb.br"},
+  {nome:"Otília Maria Alves da Nobrega Alberto Dantas", url:"https://fe.unb.br/index.php/docentes-mtc/141-otilia-maria-alves-da-nobrega-alberto-dantas", fone:"61 99250-8696", email:"otiliadantas@unb.br"},
+  {nome:"Patrícia Lima Martins Pederiva", url:"https://fe.unb.br/index.php/docentes-mtc/83-patricia-lima-martins-pederiva", fone:"61 93618-0732", email:"patped@unb.br"},
+  {nome:"Paula Cobucci Ribeiro Dias", url:"https://fe.unb.br/index.php/docentes-mtc/88-paula-cobucci-ribeiro-dias", fone:"61 99108-4551", email:"paulacobucci@unb.br"},
+  {nome:"Paula Gomes de Oliveira", url:"https://fe.unb.br/index.php/docentes-mtc/90-paula-gomes-de-oliveira", fone:"61 99219-6687", email:"pgoliveira@unb.br"},
+  {nome:"Paulo Henrique Pereira Silva de Felipe", url:"https://fe.unb.br/index.php/docentes-mtc/186-paulo-henrique-pereira-silva-de-felipe", fone:"61 99556-4481", email:"paulo.defelipe@unb.br"},
+  {nome:"Renata Silva Almendra", url:"https://fe.unb.br/index.php/docentes-mtc/187-renata-silva-almendra", fone:"61 99235-6126", email:"renata.almendra@unb.br"},
+  {nome:"Renísia Cristina Garcia Filice", url:"https://fe.unb.br/index.php/docentes-mtc/142-renisia-cristina-garcia-filice", fone:"61 98221-4888", email:"renisiacgarcia@unb.br"},
+  {nome:"Rita Silvana Santana dos Santos", url:"https://fe.unb.br/index.php/docentes-mtc/77-rita-silvana-santana-dos-santos", fone:"61 9269-4133", email:"renisiacgarcia@unb.br"},
+  {nome:"Rodrigo Matos de Souza", url:"https://fe.unb.br/index.php/docentes-mtc/63-rodrigo-matos-de-souza", fone:"61 99993-3440", email:"rodrigomatos@unb.br"},
+  {nome:"Roni Ivan Rocha de Oliveira", url:"https://fe.unb.br/index.php/docentes-mtc/188-roni-ivan-rocha-de-oliveira", fone:"61 99935-9893", email:"roni.oliveira@unb.br"},
+  {nome:"Rosana César de Arruda Fernandes", url:"https://fe.unb.br/index.php/docentes-mtc/78-rosana-cesar-de-arruda-fernandes", fone:"61 98103-4668", email:"rosana.fernandes@unb.br"},
+  {nome:"Solange Alves de Oliveira Mendes", url:"https://fe.unb.br/index.php/docentes-mtc/143-solange-alves-de-oliveira-mendes", fone:"61 98150-0869", email:"solangeoliveira@unb.br"},
+  {nome:"Tel Amiel", url:"https://fe.unb.br/index.php/docentes-mtc/144-tel-amiel", fone:"61 3107-6282", email:"amiel@unb.br"},
+  {nome:"Viviane Fernandes Faria Pinto", url:"https://fe.unb.br/index.php/docentes-mtc/192-viviane-fernandes-faria-pinto", fone:"61 98168-8670", email:"viviane.pinto@unb.br"},
+];
+
+/* Helpers */
+const grid = document.getElementById('grid');
+const search = document.getElementById('search');
+const letter = document.getElementById('letter');
+const showSel = document.getElementById('show');
+const countBadge = document.getElementById('countBadge');
+
+function initials(name){
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  const pick = (p) => p.replace(/[^\p{L}]/gu,'');
+  if (parts.length === 1) return (pick(parts[0]).slice(0,2) || "?").toUpperCase();
+  return (pick(parts[0]).slice(0,1) + pick(parts[parts.length-1]).slice(0,1)).toUpperCase();
+}
+function telHref(fone){
+  const digits = (fone||"").replace(/\D/g,'');
+  return digits? `tel:+55${digits}` : null;
+}
+
+/* Renderização */
+function render(){
+  const q = search.value.toLowerCase().trim();
+  const L = letter.value;
+  const mode = showSel.value;
+
+  grid.innerHTML = '';
+  let visible = 0;
+
+  DOCENTES
+    .slice()
+    .sort((a,b)=> a.nome.localeCompare(b.nome,'pt-BR'))
+    .forEach(d=>{
+      const hasEmail = !!(d.email && d.email.trim());
+      const hasFone  = !!(d.fone && d.fone.trim());
+      if (mode==='email' && !hasEmail) return;
+      if (mode==='phone' && !hasFone) return;
+      if (L!=='all' && d.nome[0].toUpperCase()!==L) return;
+
+      const hay = (d.nome+' '+(d.email||'')+' '+(d.fone||'')).toLowerCase();
+      if (q && !hay.includes(q)) return;
+
+      const card = document.createElement('div');
+      card.className = 'prof';
+
+      const avatar = document.createElement('div');
+      avatar.className = 'avatar';
+      avatar.textContent = initials(d.nome);
+
+      const box = document.createElement('div');
+
+      const name = document.createElement('h3');
+      name.className = 'p-name';
+      name.textContent = d.nome;
+      box.appendChild(name);
+
+      const link = document.createElement('a');
+      link.className = 'p-link';
+      link.href = d.url || '#';
+      if (d.url) { link.target = '_blank'; link.rel = 'noopener'; }
+      link.innerHTML = d.url ? '↗ Abrir perfil' : '<span class="muted">Perfil indisponível</span>';
+      box.appendChild(link);
+
+      const chips = document.createElement('div');
+      chips.className = 'chips';
+
+      // painel desdobrável
+      const reveal = document.createElement('div');
+      reveal.className = 'reveal';
+      reveal.setAttribute('aria-live','polite');
+
+      if (hasEmail){
+        const chipEmail = document.createElement('button');
+        chipEmail.className = 'chip';
+        chipEmail.type = 'button';
+        chipEmail.setAttribute('aria-expanded','false');
+        chipEmail.setAttribute('aria-controls', `rev-${Math.random().toString(36).slice(2)}`);
+        chipEmail.textContent = 'E-mail';
+        chipEmail.addEventListener('click', ()=>{
+          // alterna visibilidade do bloco e marca estado no chip
+          const opened = reveal.classList.toggle('show');
+          chipEmail.setAttribute('aria-expanded', opened ? 'true':'false');
+        });
+        chips.appendChild(chipEmail);
+      }
+      if (hasFone){
+        const chipTel = document.createElement('button');
+        chipTel.className = 'chip';
+        chipTel.type = 'button';
+        chipTel.setAttribute('aria-expanded','false');
+        chipTel.textContent = 'Telefone';
+        chipTel.addEventListener('click', ()=>{
+          const opened = reveal.classList.toggle('show');
+          chipTel.setAttribute('aria-expanded', opened ? 'true':'false');
+        });
+        chips.appendChild(chipTel);
+      }
+      if (!hasEmail && !hasFone){
+        const c=document.createElement('span'); c.className='chip'; c.style.opacity=.7; c.style.cursor='default';
+        c.textContent='Contato não informado';
+        chips.appendChild(c);
+      }
+      box.appendChild(chips);
+
+      // conteúdo do painel (mostra só o que existe)
+      if (hasEmail){
+        const row = document.createElement('div'); row.className='row';
+        row.innerHTML = `<span class="label">E-mail</span>
+                         <a href="mailto:${d.email}">${d.email}</a>
+                         <small></small>`;
+        reveal.appendChild(row);
+      }
+      if (hasFone){
+        const href = telHref(d.fone);
+        const row = document.createElement('div'); row.className='row';
+        row.innerHTML = `<span class="label">Telefone</span>
+                         ${href ? `<a href="${href}">${d.fone}</a>` : `<span>${d.fone}</span>`}
+                         <small></small>`;
+        reveal.appendChild(row);
+      }
+
+      if (hasEmail || hasFone){
+        // insere o bloco desdobrável após as chips
+        box.appendChild(reveal);
+      }
+
+      card.appendChild(avatar);
+      card.appendChild(box);
+      grid.appendChild(card);
+      visible++;
+    });
+
+  countBadge.textContent = `${visible} ${visible===1?'docente':'docentes'}`;
+}
+
+search.addEventListener('input', render);
+letter.addEventListener('change', render);
+showSel.addEventListener('change', render);
+render();
+</script>
+ <footer>
+      Departamento de Métodos e Técnicas · Universidade de Brasília · FE · UnB
+    </footer>
+</body>
+</html>
 

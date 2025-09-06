@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Convocações para Reuniões e Colegiados - MTC</title>
+
+  <style>
+    /* ===== tokens de tema (iguais ao site principal) ===== */
+    :root{
+      --bg-outer: #0b4d3a;
+      --bg-header: #093e30;
+      --bg-content: #f3f6f7;
+      --link: #106a48;
+      --link-hover: #159963;
+      --tab-active: #0c7a56;
+      --text-on-dark: #ffffff;
+      --text-muted: #cfe6dc;
+      --text-body: #1f2937;
+      --radius: 14px;
+      --shadow: 0 8px 20px rgba(0,0,0,.16);
+      --focus: 0 0 0 3px rgba(21,153,99,.35);
+    }
+
+    *{ box-sizing: border-box }
+    html, body { height: 100% }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      background: radial-gradient(1000px 600px at 20% -10%, rgba(255,255,255,.08), transparent),
+                  radial-gradient(900px 500px at 120% 10%, rgba(255,255,255,.05), transparent),
+                  var(--bg-outer);
+      color: var(--text-on-dark);
+      line-height: 1.6;
+    }
+    a{ color: inherit; text-decoration: none }
+    a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible {
+      outline: none; box-shadow: var(--focus); border-radius: 10px;
+    }
+
+    /* ===== cabeçalho compacto ===== */
+    header{
+      background: linear-gradient(180deg, var(--bg-header), #0b4635);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 22px;
+      position: sticky; top: 0; z-index: 10;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .brand{
+      display:flex; align-items:center; gap:12px;
+    }
+    .brand img{ width: 44px; height: 44px; object-fit: contain; border-radius: 8px; }
+    .brand h1{ margin:0; font-size: clamp(1rem, 2.2vw, 1.25rem); letter-spacing:.2px }
+    .brand p{ margin:0; opacity:.85; font-size:.9rem }
+
+    .actions a{
+      background: #ffffff14; padding: 8px 12px; border-radius: 10px; font-weight: 700;
+      transition: background .2s ease, transform .05s ease;
+    }
+    .actions a:hover{ background: #ffffff22; transform: translateY(-1px) }
+
+    /* ===== conteúdo ===== */
+    .wrap{
+      max-width: 1100px;
+      margin: 26px auto 60px;
+      padding: 0 16px;
+    }
+    .card{
+      background: #fff;
+      color: var(--text-body);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .card-head{
+      background: var(--link);
+      color: #fff;
+      padding: 14px 18px;
+      display:flex; align-items:center; gap:10px; flex-wrap: wrap;
+    }
+    .card-head h2{ margin:0; font-size: 1.05rem; letter-spacing: .02em }
+    .badge{
+      background: #ffffff22;
+      color: #fff; font-weight: 800; font-size:.8rem;
+      padding: 4px 10px; border-radius: 999px;
+    }
+
+    /* ===== ferramentas (busca/filtro) ===== */
+    .tools{
+      display: grid;
+      grid-template-columns: 1fr 170px;
+      gap: 10px;
+      padding: 14px 16px;
+      background: #f7faf9;
+      border-bottom: 1px solid #e5ece9;
+    }
+    .tools input, .tools select{
+      width: 100%; padding: 10px 12px; border-radius: 12px;
+      border: 1px solid #d5d8dc; background: #fff; font: inherit;
+    }
+
+    /* ===== lista de anos (collapsibles) ===== */
+    details.year{
+      border-top: 1px solid #eef2f0;
+    }
+    summary.year-head{
+      list-style:none; cursor:pointer;
+      padding: 14px 18px;
+      display:flex; align-items:center; justify-content:space-between;
+      background:#ffffff;
+    }
+    summary.year-head:hover{ background:#f9fcfb }
+    .chev{ transition: transform .2s ease; opacity:.8 }
+    details[open] .chev{ transform: rotate(90deg) }
+
+    /* ===== tabela/itens ===== */
+    .items{
+      padding: 4px 8px 16px 8px;
+      display: grid;
+      gap: 6px;
+    }
+    .item{
+      display:grid;
+      grid-template-columns: 130px 1fr auto;
+      align-items:center;
+      gap: 10px;
+      padding: 10px 10px;
+      border-radius: 10px;
+      transition: background .2s ease, transform .05s ease;
+    }
+    .item:hover{ background:#f1f7f5; transform: translateX(1px) }
+
+    .date{
+      font-weight: 800; color:#0b4d3a;
+      background:#e7f4ef; border:1px solid #d5eee6;
+      padding: 4px 10px; border-radius: 999px; text-align:center;
+    }
+    .title{
+      font-weight: 700;
+    }
+
+    .open-link{
+      display:inline-flex; align-items:center; gap:8px;
+      padding: 8px 12px; border-radius: 9px;
+      background: var(--tab-active); color: #fff; font-weight: 800;
+      transition: background .2s ease, transform .05s ease;
+      white-space: nowrap;
+    }
+    .open-link:hover{ background: var(--link-hover) }
+    .open-link svg{ width: 16px; height: 16px }
+
+    /* ===== rodapé ===== */
+    footer{
+      margin-top: 18px; color: #fff; text-align:center;
+    }
+
+    /* ===== responsivo ===== */
+    @media (max-width: 720px){
+      .tools{ grid-template-columns: 1fr }
+      .item{ grid-template-columns: 1fr; justify-items: start }
+      .open-link{ width: 100%; justify-content: center }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Cabeçalho -->
+  <header>
+    <div class="brand">
+      <img src="https://i.imgur.com/MoDDdlB.png" alt="Logo MTC">
+      <div>
+        <h1>Convocação para Reuniões e Colegiados</h1>
+        <p>MTC · Faculdade de Educação · UnB</p>
+      </div>
+    </div>
+    <nav class="actions">
+      <button onclick="window.close()" aria-label="Fechar esta janela"
+  style="background:#ffffff14; padding:8px 12px; border-radius:10px; font-weight:700; 
+         border:none; cursor:pointer; color:white;">
+  ✕ Sair
+</button>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    <section class="card">
+      <div class="card-head">
+        <h2>Repositório de Convocações</h2>
+        <span class="badge" id="countBadge">0 itens</span>
+      </div>
+
+      <!-- Ferramentas -->
+      <div class="tools">
+        <input id="search" type="search" placeholder="Buscar por número da reunião ou palavra-chave…" aria-label="Buscar atas">
+        <select id="yearFilter" aria-label="Filtrar por ano">
+          <option value="all">Todos os anos</option>
+          <option>2025</option>
+          <option>2024</option>
+		  <option>2023</option>
+        </select>
+      </div>
+
+      <!-- Listas por ano (colapsáveis) -->
+      <div id="lists">
+
+        <!-- 2025 -->
+        <details class="year" open>
+          <summary class="year-head">
+            <strong>2025</strong>
+            <span class="chev">›</span>
+          </summary>
+          <div class="items" data-year="2025">
+            <!-- copie/edite os itens conforme necessário -->
+            <div class="item" data-title="Convocação para 129ª Reunião Ordinária do MTC">
+              <div class="date">08/07/2025</div>
+              <div class="title">Convocação para 129ª Reunião Ordinária do MTC</div>
+              <a class="open-link" target="_blank" rel="noopener" href="https://drive.google.com/file/d/1WhBRp3mLoyl6grgaDbHTye7mt8eZDSiU/view?usp=sharing" aria-label="Abrir a Convocação da 129">
+                
+                Abrir
+              </a>
+            </div>
+			<div class="item" data-title="Convocação para 128ª Reunião Ordinária do MTC">
+              <div class="date">10/06/2025</div>
+              <div class="title">Convocação para 128ª Reunião Ordinária do MTC</div>
+              <a class="open-link" target="_blank" rel="noopener" href="https://drive.google.com/file/d/1orJIb3GaelpSTeUlyTnZJJ_d2bJPINkY/view?usp=sharing" aria-label="Abrir a Convocação da 128">
+                <!-- ícone seta externa -->
+                
+                Abrir
+              </a>
+            </div>
+
+            <div class="item" data-title="Convocação para 127ª Reunião Ordinária do MTC">
+              <div class="date">13/05/2025</div>
+              <div class="title">Convocação para 127ª Reunião Ordinária do MTC</div>
+              <a class="open-link" target="_blank" rel="noopener" href="https://drive.google.com/file/d/1vtzssoMStgI_XC4pifLY-_k0FQVI3JT4/view?usp=sharing">Abrir</a>
+            </div>
+
+            <div class="item" data-title="Convocação para 126ª Reunião Ordinária do MTC">
+              <div class="date">08/04/2025</div>
+              <div class="title">Convocação para 126ª Reunião Ordinária do MTC</div>
+              <a class="open-link" target="_blank" rel="noopener" href="https://drive.google.com/file/d/1LjVXIVkVbOp1KhaPZxAj1m2IgUdb4eil/view?usp=sharing">Abrir</a>
+            </div>
+
+            <div class="item" data-title="Convocação para 125ª Reunião Ordinária do MTC">
+              <div class="date">11/02/2025</div>
+              <div class="title">Convocação para 125ª Reunião Ordinária do MTC</div>
+              <a class="open-link" target="_blank" rel="noopener" href="https://drive.google.com/file/d/1vtC6BypDMeuD_Nm1G-mXsFYdMUhXvlH8/view?usp=sharing">Abrir</a>
+            </div>
+
+            <div class="item" data-title="Convocação para 124ª Reunião Ordinária do MTC">
+              <div class="date">14/01/2025</div>
+              <div class="title">Convocação para 124ª Reunião Ordinária do MTC</div>
+              <a class="open-link" target="_blank" rel="noopener" href="https://drive.google.com/file/d/1_mTAnkYXqIoNFlrfU6MYE45aRaddT4Qz/view?usp=sharing">Abrir</a>
+            </div>
+          </div>
+        </details>
+
+        <!-- 2024 -->
+        <details class="year">
+          <summary class="year-head">
+            <strong>2024</strong>
+            <span class="chev">›</span>
+          </summary>
+          <div class="items" data-year="2024">
+            <div class="item" data-title="Convocação para 123ª Reunião Ordinária do MTC">
+              <div class="date">10/12/2024</div>
+              <div class="title">Convocação para 123ª Reunião Ordinária do MTC</div>
+              <a class="open-link" target="_blank" rel="noopener" href="https://drive.google.com/file/d/1f9hXq34qhogEp4CXu8blpk7DXIlW4tr7/view?usp=drive_link">Abrir</a>
+            </div>
+            <div class="item" data-title="Convocação da 122ª Reunião Ordinária do MTC">
+              <div class="date">12/11/2024</div>
+              <div class="title">Convocação para 122ª Reunião Ordinária do MTC</div>
+              <a class="open-link" target="_blank" rel="noopener" href="https://drive.google.com/file/d/1ASqWeEL_bObUoR_dDM8GyHTIPA6cldHP/view?usp=drive_link">Abrir</a>
+            </div>
+            <div class="item" data-title="Convocação para 121ª Reunião Ordinária do MTC">
+              <div class="date">10/09/2024</div>
+              <div class="title">Convocação para 121ª Reunião Ordinária do MTC</div>
+              <a class="open-link" target="_blank" rel="noopener" href="https://drive.google.com/file/d/1z_oc0P6Bc4PXvhl1UAMP-qTqis30vQpc/view?usp=drive_link">Abrir</a>
+            </div>
+            <div class="item" data-title="Convocação para 120ª Reunião Ordinária do MTC">
+              <div class="date">13/08/2024</div>
+              <div class="title">Convocação para 120ª Reunião Ordinária do MTC</div>
+              <a class="open-link" target="_blank" rel="noopener" href="https://drive.google.com/file/d/1QQ33f3mkXDELPeSAswGBiFwsdk4EHtnt/view?usp=drive_link">Abrir</a>
+            </div>
+            <div class="item" data-title="Convocação para 119ª Reunião Ordinária do MTC">
+              <div class="date">09/07/2024</div>
+              <div class="title">Convocação para 119ª Reunião Ordinária do MTC</div>
+              <a class="open-link" target="_blank" rel="noopener" href="https://drive.google.com/file/d/14pWeCNlgAtILfYyFbr-i1CVaqiHFnayR/view?usp=drive_link">Abrir</a>
+            </div>
+            <div class="item" data-title="Convocação para 118ª Reunião Ordinária do MTC">
+              <div class="date">09/04/2024</div>
+              <div class="title">Convocação para 118ª Reunião Ordinária do MTC</div>
+              <a class="open-link" target="_blank" rel="noopener" href="https://drive.google.com/file/d/1LEkHhjBBQP8Q3b80Ne6DCsd5qO5HURr9/view?usp=drive_link">Abrir</a>
+            </div>
+			
+          </div>
+        </details>
+		
+		 <!-- 2023 -->
+        <details class="year">
+          <summary class="year-head">
+            <strong>2023</strong>
+            <span class="chev">›</span>
+          </summary>
+          <div class="items" data-year="2023">
+            <div class="item" data-title="Convocação para 117ª Reunião Ordinária do MTC">
+              <div class="date">12/12/2023</div>
+<div class="title">Convocação para 117ª Reunião Ordinária do MTC</div>
+              <a class="open-link" target="_blank" rel="noopener" href="https://drive.google.com/file/d/16g-3qqcJQgAwdlBRp-FjqeYx0SF5-AGd/view?usp=drive_link">Abrir</a>
+            </div>
+			
+            <div class="item" data-title="Convocação para 116ª Reunião Ordinária do MTC">
+<div class="date">14/11/2023</div>
+<div class="title">Convocação para 116ª Reunião Ordinária do MTC</div>
+              <a class="open-link" target="_blank" rel="noopener" href="https://drive.google.com/file/d/1yf8Ag39lEIO62lYen8P3iiurLpQBYtbL/view?usp=drive_link">Abrir</a>
+            </div>
+			                    <div class="item" data-title="Convocação para 115ª Reunião Ordinária do MTC">
+              <div class="date">10/10/2023</div>
+<div class="title">Convocação para 115ª Reunião Ordinária do MTC</div>
+              <a class="open-link" target="_blank" rel="noopener" href="https://drive.google.com/file/d/1YVxJOZ7MfIKLf3POybRDFjMweB4FoF_1/view?usp=drive_link">Abrir</a>
+            </div>
+			                    <div class="item" data-title="Convocação para 114ª Reunião Ordinária do MTC">
+              <div class="date">12/09/2023</div>
+<div class="title">Convocação para 114ª Reunião Ordinária do MTC</div>
+              <a class="open-link" target="_blank" rel="noopener" href="https://drive.google.com/file/d/17S-AzyLSEsRlBg4xlEFDMk8n1qhTNEfH/view?usp=drive_link">Abrir</a>
+            </div>
+			                    <div class="item" data-title="Convocação para 113ª Reunião Ordinária do MTC">
+              <div class="date">11/07/2023</div>
+<div class="title">Convocação para 113ª Reunião Ordinária do MTC</div>
+              <a class="open-link" target="_blank" rel="noopener" href="https://drive.google.com/file/d/1T2ZTuNa3mwX9kmdjWh9fPiwwGUIuXSaV/view?usp=drive_link">Abrir</a>
+            </div>
+			                    <div class="item" data-title="Convocação para 112ª Reunião Ordinária do MTC">
+              <div class="date">13/06/2023</div>
+<div class="title">Convocação para 112ª Reunião Ordinária do MTC</div>
+              <a class="open-link" target="_blank" rel="noopener" href="https://drive.google.com/file/d/1_9aCiidmWvweyUZhTfE79oCdak7lJDgX/view?usp=drive_link">Abrir</a>
+            </div>
+			                    <div class="item" data-title="Convocação para 111ª Reunião Ordinária do MTC">
+              <div class="date">09/05/2023</div>
+<div class="title">Convocação para 111ª Reunião Ordinária do MTC</div>
+              <a class="open-link" target="_blank" rel="noopener" href="https://drive.google.com/file/d/1tORuzQeQFqsAFnIsaXzCG_P0cqaAK-rc/view?usp=drive_link">Abrir</a>
+            </div>
+			                    <div class="item" data-title="Convocação para 110ª Reunião Ordinária do MTC">
+              <div class="date">11/04/2023</div>
+<div class="title">Convocação para 110ª Reunião Ordinária do MTC</div>
+              <a class="open-link" target="_blank" rel="noopener" href="https://drive.google.com/file/d/1SbHBoY7EH4U9CigVrsQn4Nyu9v4wZeD3/view?usp=drive_link">Abrir</a>
+            </div>
+			                    <div class="item" data-title="Convocação para 109ª Reunião Ordinária do MTC">
+              <div class="date">14/02/2023</div>
+<div class="title">Convocação para 109ª Reunião Ordinária do MTC</div>
+              <a class="open-link" target="_blank" rel="noopener" href="https://drive.google.com/file/d/1xdz299VA105fz_GrKvakQwtmXNCxcela/view?usp=drive_link">Abrir</a>
+            </div>
+			<div class="item" data-title="Convocação para 108ª Reunião Ordinária do MTC">
+              <div class="date">10/01/2023</div>
+<div class="title">Convocação para 108ª Reunião Ordinária do MTC</div>
+              <a class="open-link" target="_blank" rel="noopener" href="https://drive.google.com/file/d/1Eb87qWyYI6x__6ZEa77QUvL6f22yScDI/view?usp=drive_link">Abrir</a>
+            </div>
+      </div>
+
+     
+    </section>
+  </main>
+
+  <script>
+    // busca + filtro por ano + contador
+    const search = document.getElementById('search');
+    const yearFilter = document.getElementById('yearFilter');
+    const lists = document.getElementById('lists');
+    const countBadge = document.getElementById('countBadge');
+
+    function applyFilters(){
+      const q = search.value.toLowerCase().trim();
+      const yf = yearFilter.value;
+      let visible = 0;
+
+      // percorre anos
+      lists.querySelectorAll('.items').forEach(section => {
+        const year = section.dataset.year;
+        let yearHasVisible = false;
+
+        section.querySelectorAll('.item').forEach(it => {
+          const title = it.dataset.title.toLowerCase();
+          const matchQ = !q || title.includes(q) || it.innerText.toLowerCase().includes(q);
+          const matchY = (yf === 'all') || (yf === year);
+          const show = matchQ && matchY;
+
+          it.style.display = show ? '' : 'none';
+          if (show){ visible++; yearHasVisible = true; }
+        });
+
+        // se nenhum item visível naquele ano, fecha/oculta o bloco visualmente
+        const details = section.closest('details.year');
+        details.style.display = yearHasVisible ? '' : 'none';
+      });
+
+      countBadge.textContent = `${visible} ${visible === 1 ? 'item' : 'itens'}`;
+    }
+
+    search.addEventListener('input', applyFilters);
+    yearFilter.addEventListener('change', applyFilters);
+    applyFilters();
+  </script>
+  <footer>
+        Departamento de Métodos e Técnicas · Universidade de Brasília · Campus Darcy Ribeiro · FE 03 — Sala BT 06/09 · Asa Norte · CEP 70.910-900 · (61) 3107-6157 · mtc@fe.unb.br
+      </footer>
+</body>
+</html>

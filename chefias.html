@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Chefias de Departamento</title>
+<style>
+  :root{
+    --bg-outer:#0b4d3a; --bg-header:#093e30; --bg-content:#f3f6f7;
+    --link:#106a48; --link-hover:#159963; --chip:#0c7a56;
+    --text-on-dark:#ffffff; --text-muted:#cfe6dc; --text-body:#1f2937;
+    --radius:14px; --shadow:0 8px 20px rgba(0,0,0,.16); --focus:0 0 0 3px rgba(21,153,99,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    background:
+      radial-gradient(1000px 600px at 20% -10%, rgba(255,255,255,.08), transparent),
+      radial-gradient(900px 500px at 120% 10%, rgba(255,255,255,.05), transparent),
+      var(--bg-outer);
+    color:var(--text-on-dark); line-height:1.6;
+  }
+  a{color:inherit;text-decoration:none}
+  a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{
+    outline:none; box-shadow:var(--focus); border-radius:10px;
+  }
+
+  header{
+    background:linear-gradient(180deg,var(--bg-header),#0b4635);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 22px; position:sticky; top:0; z-index:10;
+    border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  .brand{display:flex; align-items:center; gap:12px}
+  .brand img{width:44px;height:44px;object-fit:contain;border-radius:8px}
+  .brand h1{margin:0;font-size:clamp(1rem,2.2vw,1.25rem);letter-spacing:.2px}
+  .brand p{margin:0;opacity:.85;font-size:.9rem}
+  .actions button{
+    background:#ffffff14;padding:8px 12px;border-radius:10px;font-weight:700;
+    border:none;cursor:pointer;color:white;transition:background .2s ease,transform .05s ease;
+  }
+  .actions button:hover{background:#ffffff22;transform:translateY(-1px)}
+
+  .wrap{max-width:1100px;margin:26px auto 60px;padding:0 16px}
+  .card{ background:#fff; color:var(--text-body); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden }
+  .card-head{ background:var(--link); color:#fff; padding:14px 18px; display:flex; gap:12px; align-items:center; flex-wrap:wrap }
+  .card-head h2{ margin:0; font-size:1.05rem; letter-spacing:.02em }
+  .badge{ background:#ffffff22; color:#fff; font-weight:800; font-size:.8rem; padding:4px 10px; border-radius:999px }
+
+  /* ferramentas */
+  .tools{ display:grid; grid-template-columns:1fr 200px; gap:10px; padding:14px 16px; background:#f7faf9; border-bottom:1px solid #e5ece9 }
+  .tools input,.tools select{ width:100%; padding:10px 12px; border-radius:12px; border:1px solid #d5d8dc; background:#fff; font:inherit }
+
+  /* seção por departamento (details/summary) */
+  details.dept{ border-top:1px solid #eef2f0; background:#fff }
+  summary.dept-head{
+    list-style:none; cursor:pointer; padding:14px 18px;
+    display:flex; align-items:center; justify-content:space-between;
+    background:#ffffff;
+  }
+  summary.dept-head:hover{ background:#f9fcfb }
+  .chev{ transition: transform .2s ease; opacity:.8 }
+  details[open] .chev{ transform: rotate(90deg) }
+
+  .dept-body{ padding: 8px 16px 18px 16px; background:#fff }
+
+  /* grid de pessoas dentro do depto */
+  .grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px }
+  @media (max-width:720px){ .grid{ grid-template-columns:1fr } }
+
+  .prof{
+    background:#fff;border:1px solid #eef2f0;border-radius:12px;padding:14px;
+    display:grid;grid-template-columns:54px 1fr;gap:12px;align-items:flex-start;
+    transition:transform .06s ease, box-shadow .2s ease;
+  }
+  .prof:hover{ transform:translateY(-1px); box-shadow:0 6px 16px rgba(0,0,0,.08) }
+  .avatar{
+    width:54px;height:54px;border-radius:12px;background:#e7f4ef;display:flex;align-items:center;justify-content:center;
+    color:#0b4d3a;font-weight:900;font-size:1.05rem;border:1px solid #d5eee6
+  }
+  .role{ font-size:.82rem; font-weight:900; color:#0b4d3a; margin:0 0 2px }
+  .p-name{ margin:0; font-weight:900 }
+  .p-link{ display:inline-flex; align-items:center; gap:8px; margin-top:2px; color:var(--link); font-weight:700 }
+
+  .chips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px }
+  .chip{
+    background:var(--chip); color:#fff; border-radius:999px; padding:6px 12px; font-weight:800; font-size:.78rem;
+    cursor:pointer; user-select:none; display:inline-flex; align-items:center; gap:8px
+  }
+  .chip[aria-expanded="true"]{ background:var(--link-hover) }
+
+  /* painel desdobrável dentro do cartão */
+  .reveal{
+    width:100%;
+    grid-column: 1 / -1;
+    background:#f7faf9;border:1px solid #e5ece9;border-radius:10px;
+    padding:10px 12px;margin-top:8px; display:none;
+  }
+  .reveal.show{ display:block }
+  .reveal .row{ display:flex; align-items:center; gap:10px; margin:6px 0 }
+  .reveal .label{ font-weight:900; min-width:78px; color:#0b4d3a }
+  .reveal a{ color:var(--link); font-weight:800 }
+  .muted{ color:#4b5563; font-size:.9rem }
+
+  footer{margin:18px 0 0;color:var(--text-muted);text-align:center;padding:10px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <img src="https://i.imgur.com/MoDDdlB.png" alt="Logo MTC" />
+    <div>
+      <h1>Chefias de Departamentos (FE/UnB)</h1>
+      <p>Faculdade de Educação · UnB</p>
+    </div>
+  </div>
+  <nav class="actions">
+    <button type="button" onclick="(window.close(),true)" aria-label="Fechar esta janela">✕ Sair</button>
+  </nav>
+</header>
+
+<main class="wrap">
+  <section class="card">
+    <div class="card-head">
+      <h2>Chefes e Subchefes por Departamento</h2>
+      <span class="badge" id="countBadge">0 departamentos</span>
+    </div>
+
+    <div class="tools">
+      <input id="search" type="search" placeholder="Buscar por nome ou sigla do departamento…" aria-label="Buscar">
+      <select id="sigla">
+        <option value="all">Todos os departamentos</option>
+        <option value="MTC">MTC</option>
+        <option value="TEF">TEF</option>
+        <option value="PGE">PGE</option>
+      </select>
+    </div>
+
+    <div id="list"></div>
+
+    
+  </section>
+</main>
+
+<script>
+/* ===== Pessoas (reutiliza seus dados de docentes) ===== */
+const DOCENTES = [
+  {nome:"Roni Ivan Rocha de Oliveira", url:"https://fe.unb.br/index.php/docentes-mtc/188-roni-ivan-rocha-de-oliveira", fone:"61 99935-9893", email:"roni.oliveira@unb.br"},
+  {nome:"Hélio José Santos Maia", url:"https://fe.unb.br/index.php/docentes-mtc/76-helio-jose-santos-maia", fone:"61 98210-7503", email:"heliomaia@unb.br"},
+  {nome:"Cândida Beatriz Alves", url:"https://fe.unb.br/index.php/docentes-tef/191-candida-beatriz-alves", fone:"61 99292-3974", email:"candida.alves@gmail.com"},
+  {nome:"Rainri Back dos Santos", url:"https://fe.unb.br/index.php/docentes-tef/64-rainri-back-dos-santos", fone:"61 99633-1206", email:"rainri.back@yahoo.com.br"},
+  {nome:"Cristina Helena Almeida de Carvalho", url:"https://fe.unb.br/index.php/docentes-pad/122-cristina-helena-almeida-de-carvalho", fone:"61 99195-3966", email:"cristinahelena@unb.br"},
+  {nome:"Andréia Melo Lacé", url:"https://fe.unb.br/index.php/docentes-pad/119-andreia-melo-lace", fone:"61 98177-6529", email:"andreia.mello.lace@gmail.com"},
+];
+
+/* ===== Chefias (conforme você passou) ===== */
+const DEPARTAMENTOS = [
+  { sigla: "MTC", nome: "Métodos e Técnicas", chefe: "Roni Ivan Rocha de Oliveira", subchefe: "Hélio José Santos Maia" },
+  { sigla: "TEF", nome: "Teoria e Fundamentos", chefe: "Cândida Beatriz Alves", subchefe: "Rainri Back dos Santos" },
+  { sigla: "PGE", nome: "Políticas Públicas e Gestão da Educação", chefe: "Cristina Helena Almeida de Carvalho", subchefe: "Andréia Melo Lacé" },
+];
+
+const IDX = new Map(DOCENTES.map(p => [p.nome, p]));
+
+/* ===== Util ===== */
+function initials(name){
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  const pick = (p) => p.replace(/[^\p{L}]/gu,'');
+  if (parts.length === 1) return (pick(parts[0]).slice(0,2) || "?").toUpperCase();
+  return (pick(parts[0]).slice(0,1) + pick(parts[parts.length-1]).slice(0,1)).toUpperCase();
+}
+function telHref(fone){ const digits=(fone||"").replace(/\D/g,''); return digits?`tel:+55${digits}`:null; }
+
+/* ===== Render ===== */
+const list = document.getElementById('list');
+const countBadge = document.getElementById('countBadge');
+const search = document.getElementById('search');
+const selSigla = document.getElementById('sigla');
+
+function render(){
+  const q = search.value.toLowerCase().trim();
+  const sig = selSigla.value;
+
+  list.innerHTML = '';
+  let total = 0;
+
+  DEPARTAMENTOS.forEach(dep => {
+    const hay = (dep.sigla + ' ' + dep.nome + ' ' + dep.chefe + ' ' + dep.subchefe).toLowerCase();
+    if (sig !== 'all' && dep.sigla !== sig) return;
+    if (q && !hay.includes(q)) return;
+
+    total++;
+
+    const details = document.createElement('details');
+    details.className = 'dept';
+    details.open = true; // abra por padrão; mude para false se quiser fechado
+
+    const summary = document.createElement('summary');
+    summary.className = 'dept-head';
+    summary.innerHTML = `<strong>${dep.sigla}</strong> — ${dep.nome} <span class="chev">›</span>`;
+
+    const body = document.createElement('div');
+    body.className = 'dept-body';
+
+    const grid = document.createElement('div');
+    grid.className = 'grid';
+
+    // cria cartão de pessoa (chefe / subchefe)
+    function personCard(nome, role){
+      const p = IDX.get(nome) || {nome, url:'#', fone:'', email:''};
+      const hasEmail = !!(p.email && p.email.trim());
+      const hasFone  = !!(p.fone && p.fone.trim());
+
+      const card = document.createElement('div');
+      card.className = 'prof';
+
+      const avatar = document.createElement('div');
+      avatar.className = 'avatar';
+      avatar.textContent = initials(p.nome);
+
+      const box = document.createElement('div');
+
+      const roleEl = document.createElement('p');
+      roleEl.className = 'role';
+      roleEl.textContent = role.toUpperCase();
+      box.appendChild(roleEl);
+
+      const name = document.createElement('h3');
+      name.className = 'p-name';
+      name.textContent = p.nome;
+      box.appendChild(name);
+
+      const link = document.createElement('a');
+      link.className = 'p-link';
+      link.href = p.url || '#';
+      if (p.url) { link.target = '_blank'; link.rel = 'noopener'; }
+      link.innerHTML = p.url ? '↗ Abrir perfil' : '<span class="muted">Perfil indisponível</span>';
+      box.appendChild(link);
+
+      const chips = document.createElement('div');
+      chips.className = 'chips';
+
+      const reveal = document.createElement('div');
+      reveal.className = 'reveal';
+      reveal.setAttribute('aria-live','polite');
+
+      if (hasEmail){
+        const chipEmail = document.createElement('button');
+        chipEmail.className = 'chip'; chipEmail.type='button';
+        chipEmail.setAttribute('aria-expanded','false');
+        chipEmail.textContent = 'E-mail';
+        chipEmail.addEventListener('click', ()=>{
+          const opened = reveal.classList.toggle('show');
+          chipEmail.setAttribute('aria-expanded', opened ? 'true':'false');
+        });
+        chips.appendChild(chipEmail);
+
+        const row = document.createElement('div'); row.className='row';
+        row.innerHTML = `<span class="label">E-mail</span>
+                         <a href="mailto:${p.email}">${p.email}</a>`;
+        reveal.appendChild(row);
+      }
+      if (hasFone){
+        const chipTel = document.createElement('button');
+        chipTel.className = 'chip'; chipTel.type='button';
+        chipTel.setAttribute('aria-expanded','false');
+        chipTel.textContent = 'Telefone';
+        chipTel.addEventListener('click', ()=>{
+          const opened = reveal.classList.toggle('show');
+          chipTel.setAttribute('aria-expanded', opened ? 'true':'false');
+        });
+        chips.appendChild(chipTel);
+
+        const href = telHref(p.fone);
+        const row = document.createElement('div'); row.className='row';
+        row.innerHTML = `<span class="label">Telefone</span>
+                         ${href ? `<a href="${href}">${p.fone}</a>` : `<span>${p.fone}</span>`}`;
+        reveal.appendChild(row);
+      }
+
+      if (!hasEmail && !hasFone){
+        const c=document.createElement('span'); c.className='chip'; c.style.opacity=.7; c.style.cursor='default';
+        c.textContent='Contato não informado';
+        chips.appendChild(c);
+      }
+
+      box.appendChild(chips);
+      if (hasEmail || hasFone) box.appendChild(reveal);
+
+      card.appendChild(avatar);
+      card.appendChild(box);
+      return card;
+    }
+
+    grid.appendChild(personCard(dep.chefe, 'Chefe'));
+    grid.appendChild(personCard(dep.subchefe, 'Subchefe'));
+
+    body.appendChild(grid);
+    details.appendChild(summary);
+    details.appendChild(body);
+    list.appendChild(details);
+  });
+
+  countBadge.textContent = `${total} ${total===1?'departamento':'departamentos'}`;
+}
+
+search.addEventListener('input', render);
+selSigla.addEventListener('change', render);
+render();
+</script>
+<footer>
+      Departamento de Métodos e Técnicas · Universidade de Brasília · Campus Darcy Ribeiro · FE 03 — Sala BT 06/09 · Asa Norte · CEP 70.910-900 · (61) 3107-6157 · mtc@fe.unb.br
+    </footer>
+</body>
+</html>
